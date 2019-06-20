@@ -1,5 +1,6 @@
 package org.launchcode.controllers;
 
+import org.launchcode.models.*;
 import org.launchcode.models.forms.JobForm;
 import org.launchcode.models.data.JobData;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,8 @@ public class JobController {
     public String index(Model model, int id) {
 
         // TODO #1 - get the Job with the given ID and pass it into the view
+        Job job = jobData.findById(id);
+        model.addAttribute("job", job);
 
         return "job-detail";
     }
@@ -40,8 +43,25 @@ public class JobController {
         // TODO #6 - Validate the JobForm model, and if valid, create a
         // new Job and add it to the jobData data store. Then
         // redirect to the job detail view for the new Job.
+        if (errors.hasErrors()) {
+            return "new-job";
+        }
 
-        return "";
+        String jobName = jobForm.getName();
+        Employer jobEmployer = jobData.getEmployers().findById(jobForm.getEmployerId());
+        Location jobLocation = jobData.getLocations().findById(jobForm.getLocationId());
+        PositionType jobPosition = jobData.getPositionTypes().findById(jobForm.getPositionTypeId());
+        CoreCompetency jobCompetency= jobData.getCoreCompetencies().findById(jobForm.getCoreCompetenciesId());
 
-    }
+        Job newJob = new Job(jobName, jobEmployer, jobLocation, jobPosition, jobCompetency);
+
+        jobData.add(newJob);
+
+        int jobId = newJob.getId();
+
+        model.addAttribute("job", newJob);
+
+        return "redirect:/job?id=" + jobId;
+
+        }
 }
